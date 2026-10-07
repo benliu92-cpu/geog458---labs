@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang='en'>
+// codes within head loads JavaScript and CSS from the Mapbox CDN
 <head>
     <meta charset='utf-8' />
     <title>my First Map</title>
@@ -14,17 +15,30 @@
 <body>
    <div id='map'></div>
    <script>
+    // access token to request map from mapbox
       mapboxgl.accessToken = 'pk.eyJ1IjoiYmVubGl1OTIiLCJhIjoiY211d3ptZzA1MDJoMDM0b2xvdDQwb2plZyJ9.7vN74C3GF6W7YOVJLNmNlw';
       const mymap = new mapboxgl.Map({
-             container: 'map',
-             style: 'mapbox://styles/mapbox/light-v11',
-             projection: 'globe', //Display the map as a globe since satellite-v9 defaults to Mercator
-             center: [-96, 37.8],
-             zoom:1
+            // container id, holds the map
+            container: 'map',
+            //style: 'mapbox://styles/mapbox/light-v11',
+            //projection: 'globe', //Display the map as a globe since satellite-v9 defaults to Mercator
+            // initial location longtitude and latitude 
+            center: [-122.3352, 47.6080],
+            // initial zoom level
+            zoom:10
           });
 // code from the next step will go here!
 mymap.addControl(new mapboxgl.FullscreenControl());
 mymap.addControl(new mapboxgl.NavigationControl());
+
+mymap.on('style.load', () => {
+    mymap.setConfigProperty('basemap', 'lightPreset', 'dusk');
+    mymap.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
+    // added code to show 3D buildings to enable a immersive experience
+    mymap.setConfigProperty('basemap', 'show3dObjects', true); 
+    // monochrome theme creates a distraction-free background allowing overlay data to stand out
+    mymap.setConfigProperty('basemap', 'theme', 'monochrome');
+});
 </script>
 </body>
 </html>
