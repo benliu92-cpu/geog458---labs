@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>World Cities: Distribution of Megacities</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        /* Layout of the legend panel. */
+        #legend {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 110px;
+            background: #fff;
+            margin-right: 20px;
+            margin-bottom: 40px;
+            padding: 10px 20px 10px 10px;
+            border-radius: 3px;
+            text-align: center;
+        }
+
+        /* Each row for a magnitude value. */
+        .break {
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* The circular symbol. */
+        .dot {
+            display: inline-block;
+            margin-top: 5px;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        /* Label next to the symbol. */
+        .dot-label {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-style: italic;
+        }
+
+        /* Link color within the legend. */
+        #legend a {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="legend"></div>
+        // Your map code goes here.
+    <script>
+        // Anchor the legend to the HTML element with id="legend".
+        const legend = document.getElementById('legend');
+        const grades = ['<1M', '1-5M', '5-10M', '10-20M', '20M+'];
+        const radii = [2, 4, 7, 12, 18];
+        const colors = ['#fee8c8', '#fdbb84', '#fc8d59', '#d7301f', '#7f0000'];
+        const labels = ['<strong>Population</strong>'];
+
+        for (let i = 0; i < grades.length; i++) {
+            const value = grades[i];
+            const diameter = 2 * radii[i];
+
+            labels.push(
+                '<p class="break"><i class="dot" style="background:' + colors[i] +
+                '; width:' + diameter + 'px; height:' + diameter +
+                'px;"></i> <span class="dot-label" style="top:' +
+                diameter / 2 + 'px;">' + value + '</span></p>'
+            );
+        }
+
+        const source =
+            '<p style="text-align:right; font-size:10pt;">Source: ' +
+            '<a href="https://www.naturalearthdata.com/" target="_blank">Natural Earth</a></p>';
+
+        legend.innerHTML = labels.join('') + source;
+    </script>
+
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoiYmVubGl1OTIiLCJhIjoiY211d3ptZzA1MDJoMDM0b2xvdDQwb2plZyJ9.7vN74C3GF6W7YOVJLNmNlw';
+        const mymap = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/light-v11',
+            projection: 'globe',
+            center: [-96, 37.8],
+            zoom: 1
+        });
+
+        // Add the next steps here, inside this script.
+        mymap.on('style.load', () => {
+            mymap.setFog({});
+        });
+
+        mymap.on('load', () => {
+            // Add your source and layer here in the next section.
+            mymap.addSource('population', {
+                type: 'geojson',
+                data: 'data/world-cities.geojson'
+        });
+
+            // Classification Method:
+            // I used graduated symbols with 5 popultion classes.
+            // I chose these breaks to distinguish smaller cities with lesser population.
+            // All cities are displayed and more populated cities are displayed with larger circles.
+
+            // Circle Size:
+            // Circle radii increase from 2 to 18 as population. Intend to make highly populated cities stand out.
+            // I chose graduated circle sizes, so circle area is not directly proportional to population for a more uniform look.
+            mymap.addLayer({
+                id: 'population-layer',
+                type: 'circle',
+                source: 'population',
+                paint: {
+                    'circle-radius': [
+                    'step',
+                    ['to-number', ['get', 'population'], 0],
+                        2,
+                        1000000, 4,
+                        5000000, 7,
+                        10000000, 12,
+                        20000000, 18
+                    ],
+
+                    'circle-color': [
+                    'step',
+                    ['to-number', ['get', 'population'], 0],
+                    '#fee8c8',
+                        1000000, '#fdbb84',
+                        5000000, '#fc8d59',
+                        10000000, '#d7301f',
+                        20000000, '#7f0000'
+                    ],
+
+                    'circle-opacity': 0.7,
+                    'circle-stroke-width': .7,
+                    'circle-stroke-color': 'purple'
+                }
+            });
+
+            // Click a population circle to view its name.
+            mymap.on('click', 'population-layer', (event) => {
+                const feature = event.features[0];
+                const coordinates = feature.geometry.coordinates.slice(0, 2);
+
+                new mapboxgl.Popup()
+                   .setLngLat(coordinates)
+                    .setHTML(`
+                    <strong>City:</strong> ${feature.properties.accentcity || feature.properties.city}<br>
+                    <strong>Country:</strong> ${feature.properties.country}<br>
+                    <strong>Population:</strong> ${Number(feature.properties.population).toLocaleString()}
+                    `)
+                    .addTo(mymap);
+            });
+        });
+
+    </script>
+</body>
+</html>
