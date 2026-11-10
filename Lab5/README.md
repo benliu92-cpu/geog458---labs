@@ -1,0 +1,3 @@
+# Study Area and dates:
+For this project, I selected the Lower New York harbor area, focuing on the waters near Sandy Hook and the entrance to New York Harbor. I chose this region because it is an importnat shipping corridor where passenger, cargo, and tanker vessels travel in and out of the harbor. The dataset covers December 24-31, 2025. The data came from AccessAIS, which provides historical vessel tracking data. To keep the dataset manageble, I selected a smaller geographic area and limited the time range to just one week. AccessAIS timestamps are UTC, and my map uses New York local time.
+# Interpretation:
